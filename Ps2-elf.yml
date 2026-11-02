@@ -1,0 +1,40 @@
+name: NZP PS2 ELF bootstrap
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ps2-bootstrap/**'
+      - '.github/workflows/ps2-elf.yml'
+
+jobs:
+  build-ps2-elf:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ps2dev/ps2dev:latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Check PS2 toolchain
+        run: |
+          echo "PS2DEV=$PS2DEV"
+          echo "PS2SDK=$PS2SDK"
+          command -v mips64r5900el-ps2-elf-gcc
+          mips64r5900el-ps2-elf-gcc --version
+
+      - name: Build bootstrap ELF
+        run: make -C ps2-bootstrap clean all
+
+      - name: Verify ELF
+        run: |
+          test -s ps2-bootstrap/nzp_ps2_bootstrap.elf
+          file ps2-bootstrap/nzp_ps2_bootstrap.elf || true
+          mips64r5900el-ps2-elf-readelf -h ps2-bootstrap/nzp_ps2_bootstrap.elf
+
+      - name: Upload ELF
+        uses: actions/upload-artifact@v4
+        with:
+          name: nzp-ps2-bootstrap-elf
+          path: ps2-bootstrap/nzp_ps2_bootstrap.elf
+          if-no-files-found: error
