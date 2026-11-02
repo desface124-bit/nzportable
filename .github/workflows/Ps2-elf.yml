@@ -23,6 +23,11 @@ jobs:
           command -v mips64r5900el-ps2-elf-gcc
           mips64r5900el-ps2-elf-gcc --version
 
+      - name: Install build tools
+        run: |
+          apk add --no-cache make
+          command -v make
+
       - name: Build bootstrap ELF
         run: make -C ps2-bootstrap clean all
 
